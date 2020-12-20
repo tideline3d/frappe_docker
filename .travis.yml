@@ -30,6 +30,36 @@ jobs:
       script:
         - docker build -t frappe/bench:latest -f build/bench/Dockerfile .
         - docker push frappe/bench:latest
+    - stage: "Frappe (edge)"
+      if: branch = develop AND type != pull_request
+      script:
+        - ./travis.py frappe --worker --tag latest
+        - ./travis.py frappe --worker --tag edge --tag-only
+        - ./travis.py frappe --worker --tag develop --tag-only
+    - stage: "Frappe (edge)"
+      if: branch = develop AND type != pull_request
+      script:
+        - ./travis.py frappe --nginx --tag latest
+        - ./travis.py frappe --nginx --tag edge --tag-only
+        - ./travis.py frappe --nginx --tag develop --tag-only
+    - stage: "Frappe (edge)"
+      if: branch = develop AND type != pull_request
+      script:
+        - ./travis.py frappe --socketio --tag latest
+        - ./travis.py frappe --socketio --tag edge --tag-only
+        - ./travis.py frappe --socketio --tag develop --tag-only
+    - stage: "ERPNext (edge)"
+      if: branch = develop AND type != pull_request
+      script:
+        - ./travis.py erpnext --worker --tag latest
+        - ./travis.py erpnext --worker --tag edge --tag-only
+        - ./travis.py erpnext --worker --tag develop --tag-only
+    - stage: "ERPNext (edge)"
+      if: branch = develop AND type != pull_request
+      script:
+        - ./travis.py erpnext --nginx --tag latest
+        - ./travis.py erpnext --nginx --tag edge --tag-only
+        - ./travis.py erpnext --nginx --tag develop --tag-only
     - stage: "Frappe (v13-beta)"
       if: branch = master AND type != pull_request
       script:
@@ -60,6 +90,66 @@ jobs:
         - ./travis.py erpnext --nginx --git-version 13-beta
         - ./travis.py erpnext --nginx --tag v13-beta --tag-only
         - ./travis.py erpnext --nginx --tag version-13-beta --tag-only
+    - stage: "Frappe (v12)"
+      if: branch = master AND type != pull_request
+      script:
+        - ./travis.py frappe --worker --git-version 12
+        - ./travis.py frappe --worker --tag v12 --tag-only
+        - ./travis.py frappe --worker --tag version-12 --tag-only
+    - stage: "Frappe (v12)"
+      if: branch = master AND type != pull_request
+      script:
+        - ./travis.py frappe --nginx --git-version 12
+        - ./travis.py frappe --nginx --tag v12 --tag-only
+        - ./travis.py frappe --nginx --tag version-12 --tag-only
+    - stage: "Frappe (v12)"
+      if: branch = master AND type != pull_request
+      script:
+        - ./travis.py frappe --socketio --git-version 12
+        - ./travis.py frappe --socketio --tag v12 --tag-only
+        - ./travis.py frappe --socketio --tag version-12 --tag-only
+    - stage: "ERPNext (v12)"
+      if: branch = master AND type != pull_request
+      script:
+        - ./travis.py erpnext --worker --git-version 12
+        - ./travis.py erpnext --worker --tag v12 --tag-only
+        - ./travis.py erpnext --worker --tag version-12 --tag-only
+    - stage: "ERPNext (v12)"
+      if: branch = master AND type != pull_request
+      script:
+        - ./travis.py erpnext --nginx --git-version 12
+        - ./travis.py erpnext --nginx --tag v12 --tag-only
+        - ./travis.py erpnext --nginx --tag version-12 --tag-only
+    - stage: "Frappe (v11)"
+      if: branch = master AND type != pull_request
+      script:
+        - ./travis.py frappe --worker --git-version 11
+        - ./travis.py frappe --worker --tag v11 --tag-only
+        - ./travis.py frappe  --worker --tag version-11 --tag-only
+    - stage: "Frappe (v11)"
+      if: branch = master AND type != pull_request
+      script:
+        - ./travis.py frappe --nginx --git-version 11
+        - ./travis.py frappe --nginx --tag v11 --tag-only
+        - ./travis.py frappe --nginx --tag version-11 --tag-only
+    - stage: "Frappe (v11)"
+      if: branch = master AND type != pull_request
+      script:
+        - ./travis.py frappe --socketio --git-version 11
+        - ./travis.py frappe --socketio --tag v11 --tag-only
+        - ./travis.py frappe --socketio --tag version-11 --tag-only
+    - stage: "ERPNext (v11)"
+      if: branch = master AND type != pull_request
+      script:
+        - ./travis.py erpnext --worker --git-version 11
+        - ./travis.py erpnext --worker --tag v11 --tag-only
+        - ./travis.py erpnext --worker --tag version-11 --tag-only
+    - stage: "ERPNext (v11)"
+      if: branch = master AND type != pull_request
+      script:
+        - ./travis.py erpnext --nginx --git-version 11
+        - ./travis.py erpnext --nginx --tag v11 --tag-only
+        - ./travis.py erpnext --nginx --tag version-11 --tag-only
     - stage: "Build and test edge images"
       if: type = pull_request
       before_install:

@@ -50,8 +50,8 @@ def build(service, tag, image, branch):
 
 def tag_and_push(image_name, tag):
     print(f'Tagging {image_name} as "{tag}" and pushing')
-    subprocess.run(f'docker tag {image_name} frappe/{image_name}:{tag}', shell=True)
-    subprocess.run(f'docker push frappe/{image_name}:{tag}', shell=True)
+    subprocess.run(f'docker tag {image_name} tideline3d/{image_name}:{tag}', shell=True)
+    subprocess.run(f'docker push tideline3d/{image_name}:{tag}', shell=True)
 
 
 def main():

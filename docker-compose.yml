@@ -23,7 +23,7 @@ services:
       # middleware redirect for production only
       - "${HTTPS_USE_REDIRECT_MIDDLEWARE_LABEL}"
     ports:
-      - "80:80"
+      - "8080:80"
       - "443:443"
     volumes:
       - cert-vol:/letsencrypt
@@ -34,7 +34,7 @@ services:
     restart: on-failure
     environment:
       - FRAPPE_PY=erpnext-python
-      - FRAPPE_PY_PORT=8080
+      - FRAPPE_PY_PORT=8000
       - FRAPPE_SOCKETIO=frappe-socketio
       - SOCKETIO_PORT=9000
     labels:
@@ -130,15 +130,6 @@ services:
     restart: on-failure
     volumes:
       - redis-socketio-vol:/data
-
-  mariadb:
-    image: mariadb:10.3
-    restart: on-failure
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-    volumes:
-      - ./installation/frappe-mariadb.cnf:/etc/mysql/conf.d/frappe.cnf
-      - mariadb-vol:/var/lib/mysql
 
   site-creator:
     image: tideline3d/erpnext-worker:${ERPNEXT_VERSION}

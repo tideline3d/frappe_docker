@@ -24,7 +24,7 @@ services:
       - "${HTTPS_USE_REDIRECT_MIDDLEWARE_LABEL}"
     ports:
       - "80:80"
-      - "443:443"
+      - "8080:443"
     volumes:
       - cert-vol:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock:ro

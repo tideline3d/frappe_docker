@@ -23,7 +23,7 @@ services:
       # middleware redirect for production only
       - "${HTTPS_USE_REDIRECT_MIDDLEWARE_LABEL}"
     ports:
-      - "8080:80"
+      - "80:80"
       - "443:443"
     volumes:
       - cert-vol:/letsencrypt

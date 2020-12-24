@@ -1,33 +1,23 @@
-version: "3"
+version: '3'
 
 services:
-  traefik:
-    image: "traefik:v2.2"
-    command:
-      - "--log.level=DEBUG"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
-      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.myresolver.acme.email=${LETSENCRYPT_EMAIL}"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-    labels:
-      # enable traefik
-      - "traefik.enable=true"
-      # global redirect to https for production only
-      - "${HTTPS_REDIRECT_RULE_LABEL}"
-      - "${HTTPS_REDIRECT_ENTRYPOINT_LABEL}"
-      - "${HTTPS_REDIRECT_MIDDLEWARE_LABEL}"
-      # middleware redirect for production only
-      - "${HTTPS_USE_REDIRECT_MIDDLEWARE_LABEL}"
-    ports:
-      - "80:80"
-      - "8080:443"
+  redis-cache:
+    image: redis:latest
+    restart: on-failure
     volumes:
-      - cert-vol:/letsencrypt
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - redis-cache-vol:/data
+
+  redis-queue:
+    image: redis:latest
+    restart: on-failure
+    volumes:
+      - redis-queue-vol:/data
+
+  redis-socketio:
+    image: redis:latest
+    restart: on-failure
+    volumes:
+      - redis-socketio-vol:/data
 
   erpnext-nginx:
     image: tideline3d/erpnext-nginx:${ERPNEXT_VERSION}
@@ -37,12 +27,21 @@ services:
       - FRAPPE_PY_PORT=8000
       - FRAPPE_SOCKETIO=frappe-socketio
       - SOCKETIO_PORT=9000
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.erpnext-nginx.rule=Host(${SITES})"
-      - "${ENTRYPOINT_LABEL}"
-      - "${CERT_RESOLVER_LABEL}"
-      - "traefik.http.services.erpnext-nginx.loadbalancer.server.port=80"
+      - LETSENCRYPT_HOST=${SITES}
+      - VIRTUAL_HOST=${SITES}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    depends_on:
+      - erpnext-python
+      - frappe-socketio
+      - frappe-worker-default
+      - frappe-worker-long
+      - frappe-worker-short
+    links:
+      - erpnext-python
+      - frappe-socketio
+      - frappe-worker-default
+      - frappe-worker-long
+      - frappe-worker-short
     volumes:
       - sites-vol:/var/www/html/sites:rw
       - assets-vol:/assets:rw
@@ -66,20 +65,25 @@ services:
     restart: on-failure
     depends_on:
       - redis-socketio
+    links:
+      - redis-socketio
     volumes:
       - sites-vol:/home/frappe/frappe-bench/sites:rw
 
-  erpnext-worker-default:
+  frappe-worker-default:
     image: tideline3d/erpnext-worker:${ERPNEXT_VERSION}
     restart: on-failure
     command: worker
     depends_on:
       - redis-queue
       - redis-cache
+    links:
+      - redis-queue
+      - redis-cache
     volumes:
       - sites-vol:/home/frappe/frappe-bench/sites:rw
 
-  erpnext-worker-short:
+  frappe-worker-short:
     image: tideline3d/erpnext-worker:${ERPNEXT_VERSION}
     restart: on-failure
     command: worker
@@ -88,10 +92,13 @@ services:
     depends_on:
       - redis-queue
       - redis-cache
+    links:
+      - redis-queue
+      - redis-cache
     volumes:
       - sites-vol:/home/frappe/frappe-bench/sites:rw
 
-  erpnext-worker-long:
+  frappe-worker-long:
     image: tideline3d/erpnext-worker:${ERPNEXT_VERSION}
     restart: on-failure
     command: worker
@@ -100,57 +107,28 @@ services:
     depends_on:
       - redis-queue
       - redis-cache
+    links:
+      - redis-queue
+      - redis-cache
     volumes:
       - sites-vol:/home/frappe/frappe-bench/sites:rw
 
-  erpnext-schedule:
+  frappe-schedule:
     image: tideline3d/erpnext-worker:${ERPNEXT_VERSION}
     restart: on-failure
     command: schedule
     depends_on:
       - redis-queue
       - redis-cache
-    volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
-
-  redis-cache:
-    image: redis:latest
-    restart: on-failure
-    volumes:
-      - redis-cache-vol:/data
-
-  redis-queue:
-    image: redis:latest
-    restart: on-failure
-    volumes:
-      - redis-queue-vol:/data
-
-  redis-socketio:
-    image: redis:latest
-    restart: on-failure
-    volumes:
-      - redis-socketio-vol:/data
-
-  site-creator:
-    image: tideline3d/erpnext-worker:${ERPNEXT_VERSION}
-    restart: "no"
-    command: new
-    depends_on:
-      - erpnext-python
-    environment:
-      - SITE_NAME=${SITE_NAME}
-      - DB_ROOT_USER=${DB_ROOT_USER}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - INSTALL_APPS=${INSTALL_APPS}
+    links:
+      - redis-queue
+      - redis-cache
     volumes:
       - sites-vol:/home/frappe/frappe-bench/sites:rw
 
 volumes:
-  mariadb-vol:
+  assets-vol:
+  sites-vol:
   redis-cache-vol:
   redis-queue-vol:
   redis-socketio-vol:
-  assets-vol:
-  sites-vol:
-  cert-vol:

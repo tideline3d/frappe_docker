@@ -42,7 +42,7 @@ RUN git clone --depth 1 https://github.com/frappe/bench /tmp/bench \
 RUN cp -R /home/frappe/frappe-bench/apps/frappe/frappe/public/* /home/frappe/frappe-bench/sites/assets/frappe \
     && cp -R /home/frappe/frappe-bench/apps/frappe/node_modules /home/frappe/frappe-bench/sites/assets/frappe/
 
-FROM nginx:latest
+FROM nginx:1.21
 COPY --from=0 /home/frappe/frappe-bench/sites /var/www/html/
 COPY --from=0 /var/www/error_pages /var/www/
 COPY build/common/nginx-default.conf.template /etc/nginx/conf.d/default.conf.template
